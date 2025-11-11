@@ -413,10 +413,11 @@ export function CodeEditor(): JSX.Element {
           <button title="Close editor (mobile)" onClick={toggleEditor} className="close-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 hidden sm:inline-flex"><X size={16} /></button>
 
           <div className="flex items-center gap-2">
-            <button onClick={downloadZip} title="Download ZIP" className="px-2 py-1 rounded border bg-transparent text-sm hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2"><Download size={14} />Download</button>
-            <button onClick={openInNewTab} title="Open preview in new tab" className="px-2 py-1 rounded border bg-transparent text-sm hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2"><ExternalLink size={14} />Preview</button>
-            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Toggle theme" className="px-2 py-1 rounded border bg-transparent text-sm hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2">{theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />} Theme</button>
-            <label className="px-2 py-1 rounded border bg-transparent text-sm hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2 cursor-pointer">Import<input ref={fileInputRef} type="file" multiple accept=".html,.css,.js" className="hidden" onChange={importFiles} /></label>
+            <button onClick={downloadZip} title="Download ZIP" className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><Download size={16} /></button>
+            <button onClick={openInNewTab} title="Open preview in new tab" className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><ExternalLink size={16} /></button>
+            {/* Theme toggle moved to Settings popup */}
+            <button title="Import files" onClick={() => fileInputRef.current?.click()} className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><UploadIcon /></button>
+            <input ref={fileInputRef} type="file" multiple accept=".html,.css,.js" className="hidden" onChange={importFiles} />
           </div>
 
           <div className="ml-auto flex items-center gap-2">
