@@ -483,6 +483,7 @@ export function CodeEditor(): JSX.Element {
               <button onClick={() => cmAction('undo')} className="px-2 py-1 rounded border text-sm">Undo</button>
               <button onClick={() => cmAction('redo')} className="px-2 py-1 rounded border text-sm">Redo</button>
               <button onClick={() => cmAction('format')} className="px-2 py-1 rounded border bg-blue-600 text-white text-sm">Format</button>
+              <button onClick={() => copyCode('html')} className="px-2 py-1 rounded border text-sm">Copy</button>
             </div>
           </div>
 
