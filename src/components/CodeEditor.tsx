@@ -33,7 +33,7 @@ function Spinner({ size = 16 }: { size?: number }) {
 }
 
 export function CodeEditor(): JSX.Element {
-  const { preferredProvider, theme, setTheme } = useSettings();
+  const { preferredProvider, theme, setTheme, puterSignedIn } = useSettings();
 
   const [html, setHtml] = useState<string>(DEFAULT_HTML);
   const [css, setCss] = useState<string>(DEFAULT_CSS);
