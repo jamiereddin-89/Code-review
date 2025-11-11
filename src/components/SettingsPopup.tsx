@@ -16,7 +16,16 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
     refreshPuterUsage,
     signInPuter,
     signOutPuter,
+    pollinationsModels,
+    puterModels,
+    refreshPollinationsModels,
+    refreshPuterModels,
+    activeModels,
+    setActiveModels,
   } = useSettings();
+
+  const [showModels, setShowModels] = useState<'pollinations' | 'puter' | null>(null);
+  const [modelSearch, setModelSearch] = useState('');
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
