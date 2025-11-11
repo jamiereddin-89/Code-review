@@ -33,7 +33,7 @@ function Spinner({ size = 16 }: { size?: number }) {
 }
 
 export function CodeEditor(): JSX.Element {
-  const { preferredProvider, theme, setTheme, puterSignedIn } = useSettings();
+  const { preferredProvider, theme, setTheme } = useSettings();
 
   const [html, setHtml] = useState<string>(DEFAULT_HTML);
   const [css, setCss] = useState<string>(DEFAULT_CSS);
@@ -210,45 +210,15 @@ export function CodeEditor(): JSX.Element {
 
   function openInNewTab() {
     const full = combinedSrcDoc;
-    const w = window.open('', '_blank', 'noopener');
+    const w = window.open();
     if (!w) {
       alert('Please allow popups');
       return;
     }
-    try {
-      w.document.open();
-      w.document.write(full);
-      w.document.close();
-      w.focus();
-    } catch (e) {
-      // Fallback: create blob and open URL
-      const blob = new Blob([full], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.target = '_blank';
-      a.rel = 'noopener';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
+    w.document.open();
+    w.document.write(full);
+    w.document.close();
   }
-
-  function copyCode(kind: 'html' | 'css' | 'js') {
-    let text = '';
-    if (kind === 'html') text = cmHtmlRef.current ? cmHtmlRef.current.getValue() : html;
-    if (kind === 'css') text = cmCssRef.current ? cmCssRef.current.getValue() : css;
-    if (kind === 'js') text = cmJsRef.current ? cmJsRef.current.getValue() : js;
-    if (!text) return;
-    navigator.clipboard.writeText(text).then(() => {
-      // small UI feedback could be added
-    }).catch(() => {
-      alert('Copy failed');
-    });
-  }
-
-  const [deviceMenuOpen, setDeviceMenuOpen] = useState(false);
 
   async function downloadZip() {
     const zipAvailable = typeof (window as any).JSZip !== 'undefined';
@@ -396,19 +366,16 @@ export function CodeEditor(): JSX.Element {
       <div className={`overlay transition-opacity ${overlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={toggleEditor} />
 
       <aside className={`left-panel w-80 min-w-[220px] bg-white/60 dark:bg-gray-900/60 border rounded-lg shadow-sm flex flex-col overflow-hidden ${loading ? 'pulse-green' : ''}`}>
-        <div className="chat-header px-3 py-2 bg-white/80 dark:bg-gray-900/80 border-b flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <button title="New chat" onClick={startNewChat} className="px-2 py-1 rounded border bg-transparent text-sm hover:bg-gray-50 dark:hover:bg-gray-800">➕</button>
-            <div>
-              <div className="text-sm font-semibold">Chat</div>
-            </div>
+        <div className="chat-header px-4 py-3 bg-white/80 dark:bg-gray-900/80 border-b flex items-center justify-between gap-2">
+          <div>
+            <div className="text-sm font-semibold">Chat</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Generate and iterate on code</div>
           </div>
-
           <div className="flex items-center gap-2">
-            <div className="text-xs px-2 py-1 rounded border bg-transparent">{preferredProvider === 'puter' ? (puterSignedIn ? 'Puter' : 'Puter (signin)') : 'Pollinations'}</div>
+            <button title="New chat" onClick={startNewChat} className="px-2 py-1 rounded border bg-transparent text-sm hover:bg-gray-50 dark:hover:bg-gray-800">➕</button>
             <select aria-label="Select model" value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className="text-xs p-1 rounded border bg-transparent">
-              <option value="openai">GPT-4o-mini</option>
-              <option value="openai-large">GPT-4o</option>
+              <option value="openai">OpenAI GPT-4o-mini</option>
+              <option value="openai-large">OpenAI GPT-4o</option>
               <option value="qwen-coder">Qwen 2.5 Coder</option>
               <option value="llama">Llama 3.3 70B</option>
               <option value="mistral">Mistral</option>
@@ -454,18 +421,13 @@ export function CodeEditor(): JSX.Element {
             <input ref={fileInputRef} type="file" multiple accept=".html,.css,.js" className="hidden" onChange={importFiles} />
           </div>
 
-          <div className="ml-auto flex items-center gap-2 relative">
-            <button title="Device size" onClick={() => setDeviceMenuOpen((s) => !s)} className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="1.2"/><rect x="7" y="16" width="10" height="4" rx="1" stroke="currentColor" strokeWidth="1.2"/></svg>
-            </button>
-            {deviceMenuOpen && (
-              <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border rounded shadow z-40">
-                <button onClick={() => { setDeviceSizeState('full'); setDeviceMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm">Full Size</button>
-                <button onClick={() => { setDeviceSizeState('iphone'); setDeviceMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm">iPhone (320x568)</button>
-                <button onClick={() => { setDeviceSizeState('ipad'); setDeviceMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm">iPad (768x1024)</button>
-                <button onClick={() => { setDeviceSizeState('desktop'); setDeviceMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm">Desktop (1280x720)</button>
-              </div>
-            )}
+          <div className="ml-auto flex items-center gap-2">
+            <select aria-label="Device size" value={deviceSize} onChange={(e) => setDeviceSizeState(e.target.value as any)} className="text-sm p-1 rounded border bg-transparent">
+              <option value="full">Full Size</option>
+              <option value="iphone">iPhone (320x568)</option>
+              <option value="ipad">iPad (768x1024)</option>
+              <option value="desktop">Desktop (1280x720)</option>
+            </select>
           </div>
         </div>
 
@@ -483,7 +445,6 @@ export function CodeEditor(): JSX.Element {
               <button onClick={() => cmAction('undo')} className="px-2 py-1 rounded border text-sm">Undo</button>
               <button onClick={() => cmAction('redo')} className="px-2 py-1 rounded border text-sm">Redo</button>
               <button onClick={() => cmAction('format')} className="px-2 py-1 rounded border bg-blue-600 text-white text-sm">Format</button>
-              <button onClick={() => copyCode('html')} className="px-2 py-1 rounded border text-sm">Copy</button>
             </div>
           </div>
 
@@ -493,7 +454,6 @@ export function CodeEditor(): JSX.Element {
               <button onClick={() => cmAction('undo')} className="px-2 py-1 rounded border text-sm">Undo</button>
               <button onClick={() => cmAction('redo')} className="px-2 py-1 rounded border text-sm">Redo</button>
               <button onClick={() => cmAction('format')} className="px-2 py-1 rounded border bg-blue-600 text-white text-sm">Format</button>
-              <button onClick={() => copyCode('css')} className="px-2 py-1 rounded border text-sm">Copy</button>
             </div>
           </div>
 
@@ -503,7 +463,6 @@ export function CodeEditor(): JSX.Element {
               <button onClick={() => cmAction('undo')} className="px-2 py-1 rounded border text-sm">Undo</button>
               <button onClick={() => cmAction('redo')} className="px-2 py-1 rounded border text-sm">Redo</button>
               <button onClick={() => cmAction('format')} className="px-2 py-1 rounded border bg-blue-600 text-white text-sm">Format</button>
-              <button onClick={() => copyCode('js')} className="px-2 py-1 rounded border text-sm">Copy</button>
             </div>
           </div>
 

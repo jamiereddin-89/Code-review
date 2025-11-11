@@ -13,25 +13,3 @@
   animation: pulse-green 1.6s infinite ease-in-out;
   border-color: rgba(16,185,129,0.8) !important;
 }
-
-/* Hide native scrollbars but keep scroll functionality */
-.CodeMirror-scroll, .content, .chat, textarea, iframe {
-  scrollbar-width: thin;
-}
-
-/* Webkit */
-.CodeMirror-scroll::-webkit-scrollbar, .content::-webkit-scrollbar, .chat::-webkit-scrollbar, textarea::-webkit-scrollbar, iframe::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.CodeMirror-scroll::-webkit-scrollbar-thumb, .content::-webkit-scrollbar-thumb, .chat::-webkit-scrollbar-thumb, textarea::-webkit-scrollbar-thumb, iframe::-webkit-scrollbar-thumb {
-  background: transparent;
-}
-.CodeMirror-scroll::-webkit-scrollbar-track, .content::-webkit-scrollbar-track, .chat::-webkit-scrollbar-track, textarea::-webkit-scrollbar-track, iframe::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* For modern browsers, make scrollbar transparent */
-.CodeMirror-scroll, .content, .chat, textarea, iframe {
-  scrollbar-color: transparent transparent;
-}

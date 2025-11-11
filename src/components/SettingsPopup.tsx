@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 
 export function SettingsPopup({ onClose }: { onClose: () => void }) {
@@ -16,16 +16,7 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
     refreshPuterUsage,
     signInPuter,
     signOutPuter,
-    pollinationsModels,
-    puterModels,
-    refreshPollinationsModels,
-    refreshPuterModels,
-    activeModels,
-    setActiveModels,
   } = useSettings();
-
-  const [showModels, setShowModels] = useState<'pollinations' | 'puter' | null>(null);
-  const [modelSearch, setModelSearch] = useState('');
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -34,9 +25,9 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-60">
+    <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="absolute inset-x-4 top-10 mx-auto max-w-2xl rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-xl border border-gray-200 dark:border-gray-800" style={{ zIndex: 100000 }}>
+      <div className="absolute inset-x-4 top-10 mx-auto max-w-2xl rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-xl border border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
           <h2 className="text-base font-semibold">Settings</h2>
           <button aria-label="Close" onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -130,8 +121,8 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
           <section>
             <h3 className="font-medium mb-2">AI Models</h3>
             <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="mr-auto">Provider</span>
+              <div className="flex items-center justify-between">
+                <span>Provider</span>
                 <select
                   value={preferredProvider}
                   onChange={(e) => setPreferredProvider(e.target.value as any)}
@@ -141,14 +132,6 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
                   <option value="puter" disabled={!puterSignedIn}>Puter {puterSignedIn ? '' : '(Sign-in required)'}</option>
                 </select>
               </div>
-
-              <div className="flex items-center gap-2">
-                <button onClick={async () => { await refreshPollinationsModels(); }} className="px-3 py-1 rounded border text-sm">Refresh Pollinations Models</button>
-                <button onClick={async () => { await refreshPuterModels(); }} className="px-3 py-1 rounded border text-sm" disabled={!puterSignedIn}>Refresh Puter Models</button>
-                {pollinationsModels.length > 0 && <button onClick={() => setShowModels('pollinations')} className="px-3 py-1 rounded border text-sm">Pollinations Models</button>}
-                {puterModels.length > 0 && <button onClick={() => setShowModels('puter')} className="px-3 py-1 rounded border text-sm">Puter Models</button>}
-              </div>
-
               <p className="text-xs text-gray-600 dark:text-gray-400">When both are available, app may fall back automatically if a provider fails.</p>
             </div>
           </section>
@@ -159,30 +142,6 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
           </section>
         </div>
       </div>
-
-      {showModels && (
-        <div className="fixed inset-0" style={{ zIndex: 100001 }}>
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowModels(null)} />
-          <div className="absolute inset-x-6 top-20 mx-auto max-w-3xl rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-xl border border-gray-200 dark:border-gray-800 p-4" style={{ zIndex: 100002 }}>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-semibold">{showModels === 'pollinations' ? 'Pollinations Models' : 'Puter Models'}</h3>
-              <div className="flex items-center gap-2">
-                <input value={modelSearch} onChange={(e) => setModelSearch(e.target.value)} placeholder="Search models" className="px-2 py-1 rounded border text-sm" />
-                <button onClick={() => setShowModels(null)} className="px-2 py-1 rounded border">Close</button>
-              </div>
-            </div>
-            <div className="max-h-[60vh] overflow-auto p-2 space-y-2">
-              {(showModels === 'pollinations' ? pollinationsModels : puterModels).filter(m => m.toLowerCase().includes(modelSearch.toLowerCase())).map((m) => (
-                <div key={m} className="flex items-center justify-between border-b py-2">
-                  <div className="text-sm">{m}</div>
-                  <input type="checkbox" checked={!!activeModels[m]} onChange={(e) => { const next = { ...activeModels, [m]: e.target.checked }; setActiveModels(next); localStorage.setItem('active.models', JSON.stringify(next)); }} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

@@ -29,12 +29,6 @@ interface SettingsState {
   refreshPuterUsage: () => Promise<void>;
   signInPuter: () => Promise<boolean>;
   signOutPuter: () => Promise<void>;
-  pollinationsModels: string[];
-  puterModels: string[];
-  refreshPollinationsModels: () => Promise<string[]>;
-  refreshPuterModels: () => Promise<string[]>;
-  activeModels: Record<string, boolean>;
-  setActiveModels: (m: Record<string, boolean>) => void;
 }
 
 const SettingsContext = createContext<SettingsState | null>(null);
@@ -50,9 +44,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [puterSignedIn, setPuterSignedIn] = useState(false);
   const [puterUser, setPuterUser] = useState<UserInfo | null>(null);
   const [puterUsage, setPuterUsage] = useState<PutterUsage | null>(null);
-  const [pollinationsModels, setPollinationsModels] = useState<string[]>([]);
-  const [puterModels, setPuterModels] = useState<string[]>([]);
-  const [activeModels, setActiveModels] = useState<Record<string, boolean>>(() => JSON.parse(localStorage.getItem('active.models') || '{}'));
 
   // Persist settings
   useEffect(() => localStorage.setItem(THEME_KEY, theme), [theme]);
@@ -110,37 +101,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const refreshPollinationsModels = useCallback(async () => {
-    try {
-      const res = await fetch('https://text.pollinations.ai/models');
-      if (!res.ok) throw new Error('Failed to fetch pollinations models');
-      const data = await res.json().catch(() => null);
-      // expect array of model names or objects
-      let list: string[] = [];
-      if (Array.isArray(data)) list = data.map((m: any) => (typeof m === 'string' ? m : m.name || m.id || JSON.stringify(m)));
-      setPollinationsModels(list);
-      return list;
-    } catch (e) {
-      setPollinationsModels([]);
-      return [];
-    }
-  }, []);
-
-  const refreshPuterModels = useCallback(async () => {
-    try {
-      const res = await fetch('https://api.puter.com/puterai/chat/models/');
-      if (!res.ok) throw new Error('Failed to fetch puter models');
-      const data = await res.json().catch(() => null);
-      let list: string[] = [];
-      if (Array.isArray(data)) list = data.map((m: any) => (typeof m === 'string' ? m : m.name || m.id || JSON.stringify(m)));
-      setPuterModels(list);
-      return list;
-    } catch (e) {
-      setPuterModels([]);
-      return [];
-    }
-  }, []);
-
   const refreshPuterAuth = useCallback(async () => {
     try {
       const api = window.puter?.auth;
@@ -153,15 +113,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       const signed = await api.isSignedIn();
       setPuterSignedIn(Boolean(signed));
       if (signed) {
-        const userRaw = await api.getUser();
-        let normalized = null as UserInfo | null;
-        if (userRaw) {
-          const id = userRaw.id ?? userRaw.userId ?? userRaw.user_id ?? userRaw.uid ?? userRaw.sub ?? null;
-          const email = userRaw.email ?? userRaw.mail ?? userRaw.username?.includes('@') ? userRaw.username : null ?? null;
-          const name = userRaw.name ?? userRaw.fullName ?? userRaw.username ?? (email ? String(email).split('@')[0] : null) ?? null;
-          normalized = { id: id || undefined, email: email || undefined, name: name || undefined };
-        }
-        setPuterUser(normalized);
+        const user = await api.getUser();
+        setPuterUser(user || null);
         await refreshPuterUsage();
       } else {
         setPuterUser(null);
@@ -227,13 +180,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     refreshPuterUsage,
     signInPuter,
     signOutPuter,
-    pollinationsModels,
-    puterModels,
-    refreshPollinationsModels,
-    refreshPuterModels,
-    activeModels,
-    setActiveModels,
-  }), [theme, deviceSize, preferredProvider, puterSignedIn, puterUser, puterUsage, refreshPuterAuth, refreshPuterUsage, signInPuter, signOutPuter, pollinationsModels, puterModels, refreshPollinationsModels, refreshPuterModels, activeModels]);
+  }), [theme, deviceSize, preferredProvider, puterSignedIn, puterUser, puterUsage, refreshPuterAuth, refreshPuterUsage, signInPuter, signOutPuter]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
