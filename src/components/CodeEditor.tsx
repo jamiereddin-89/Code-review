@@ -210,15 +210,45 @@ export function CodeEditor(): JSX.Element {
 
   function openInNewTab() {
     const full = combinedSrcDoc;
-    const w = window.open();
+    const w = window.open('', '_blank', 'noopener');
     if (!w) {
       alert('Please allow popups');
       return;
     }
-    w.document.open();
-    w.document.write(full);
-    w.document.close();
+    try {
+      w.document.open();
+      w.document.write(full);
+      w.document.close();
+      w.focus();
+    } catch (e) {
+      // Fallback: create blob and open URL
+      const blob = new Blob([full], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
   }
+
+  function copyCode(kind: 'html' | 'css' | 'js') {
+    let text = '';
+    if (kind === 'html') text = cmHtmlRef.current ? cmHtmlRef.current.getValue() : html;
+    if (kind === 'css') text = cmCssRef.current ? cmCssRef.current.getValue() : css;
+    if (kind === 'js') text = cmJsRef.current ? cmJsRef.current.getValue() : js;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      // small UI feedback could be added
+    }).catch(() => {
+      alert('Copy failed');
+    });
+  }
+
+  const [deviceMenuOpen, setDeviceMenuOpen] = useState(false);
 
   async function downloadZip() {
     const zipAvailable = typeof (window as any).JSZip !== 'undefined';
