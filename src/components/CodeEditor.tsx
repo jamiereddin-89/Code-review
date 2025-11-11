@@ -33,7 +33,7 @@ function Spinner({ size = 16 }: { size?: number }) {
 }
 
 export function CodeEditor(): JSX.Element {
-  const { preferredProvider, theme, setTheme, puterSignedIn, pollinationsModels, puterModels, activeModels } = useSettings();
+  const { preferredProvider, theme, setTheme, puterSignedIn } = useSettings();
 
   const [html, setHtml] = useState<string>(DEFAULT_HTML);
   const [css, setCss] = useState<string>(DEFAULT_CSS);
@@ -86,6 +86,10 @@ export function CodeEditor(): JSX.Element {
     if (el) el.scrollTop = el.scrollHeight;
   }, [chatHistory]);
 
+  useEffect(() => {
+    document.body.classList.remove('dark-mode', 'light-mode');
+    document.body.classList.add(theme === 'dark' ? 'dark-mode' : 'light-mode');
+  }, [theme]);
 
   const adjustLayout = useCallback(() => {
     const header = document.querySelector('header') as HTMLElement | null;
@@ -135,13 +139,6 @@ export function CodeEditor(): JSX.Element {
   function switchTab(to: 'html' | 'css' | 'js' | 'output') {
     setTab(to);
     if (to === 'output') setDeviceSizeState((s) => s);
-    // ensure editor resizes when tab switches
-    setTimeout(() => {
-      const cur = to === 'html' ? cmHtmlRef.current : to === 'css' ? cmCssRef.current : cmJsRef.current;
-      if (cur && cur.refresh && cur.getScrollInfo) {
-        try { const info = cur.getScrollInfo(); cur.setSize('100%', Math.min(900, Math.max(120, info.height + 16)) + 'px'); cur.refresh(); } catch (e) { /* ignore */ }
-      }
-    }, 60);
   }
 
   function startNewChat() {
@@ -299,24 +296,6 @@ export function CodeEditor(): JSX.Element {
       const CM = (window as any).CodeMirror;
       if (!CM) return false;
       // HTML editor
-      const approxLineHeight = 20;
-      function setAutoHeight(cmInstance: any) {
-        try {
-          // prefer measuring content height directly when available
-          const info = cmInstance.getScrollInfo ? cmInstance.getScrollInfo() : null;
-          let height = 0;
-          if (info && typeof info.height === 'number') {
-            height = Math.min(900, Math.max(120, info.height + 16));
-          } else {
-            const lines = Math.max(1, cmInstance.lineCount());
-            height = Math.min(900, Math.max(120, lines * approxLineHeight + 20));
-          }
-          cmInstance.setSize('100%', height + 'px');
-          // ensure layout refresh
-          if (cmInstance.refresh) cmInstance.refresh();
-        } catch (e) { /* ignore */ }
-      }
-
       if (!cmHtmlRef.current && cmContainersRef.current.html) {
         cmHtmlRef.current = CM(cmContainersRef.current.html, {
           value: html,
@@ -325,8 +304,7 @@ export function CodeEditor(): JSX.Element {
           autoCloseBrackets: true,
           tabSize: 2,
         });
-        cmHtmlRef.current.on('change', (cm: any) => { setHtml(cm.getValue()); setAutoHeight(cm); });
-        setAutoHeight(cmHtmlRef.current);
+        cmHtmlRef.current.on('change', (cm: any) => setHtml(cm.getValue()));
       }
       // CSS editor
       if (!cmCssRef.current && cmContainersRef.current.css) {
@@ -337,8 +315,7 @@ export function CodeEditor(): JSX.Element {
           autoCloseBrackets: true,
           tabSize: 2,
         });
-        cmCssRef.current.on('change', (cm: any) => { setCss(cm.getValue()); setAutoHeight(cm); });
-        setAutoHeight(cmCssRef.current);
+        cmCssRef.current.on('change', (cm: any) => setCss(cm.getValue()));
       }
       // JS editor
       if (!cmJsRef.current && cmContainersRef.current.js) {
@@ -349,8 +326,7 @@ export function CodeEditor(): JSX.Element {
           autoCloseBrackets: true,
           tabSize: 2,
         });
-        cmJsRef.current.on('change', (cm: any) => { setJs(cm.getValue()); setAutoHeight(cm); });
-        setAutoHeight(cmJsRef.current);
+        cmJsRef.current.on('change', (cm: any) => setJs(cm.getValue()));
       }
       return true;
     }
@@ -387,25 +363,7 @@ export function CodeEditor(): JSX.Element {
     }
   }
 
-  // Keep CodeMirror editors in sync when state changes externally (e.g. AI inserts code)
   useEffect(() => {
-    try {
-      if (cmHtmlRef.current && typeof cmHtmlRef.current.getValue === 'function') {
-        if (cmHtmlRef.current.getValue() !== html) cmHtmlRef.current.setValue(html);
-        setTimeout(() => { if (cmHtmlRef.current.refresh) cmHtmlRef.current.refresh(); }, 40);
-      }
-      if (cmCssRef.current && typeof cmCssRef.current.getValue === 'function') {
-        if (cmCssRef.current.getValue() !== css) cmCssRef.current.setValue(css);
-        setTimeout(() => { if (cmCssRef.current.refresh) cmCssRef.current.refresh(); }, 40);
-      }
-      if (cmJsRef.current && typeof cmJsRef.current.getValue === 'function') {
-        if (cmJsRef.current.getValue() !== js) cmJsRef.current.setValue(js);
-        setTimeout(() => { if (cmJsRef.current.refresh) cmJsRef.current.refresh(); }, 40);
-      }
-    } catch (e) {
-      // ignore
-    }
-
     const iframe = iframeRef.current;
     const content = document.querySelector('.content') as HTMLElement | null;
     if (!iframe || !content) return;
@@ -433,14 +391,14 @@ export function CodeEditor(): JSX.Element {
   }, [deviceSize, combinedSrcDoc]);
 
   return (
-    <div className="flex w-full gap-4 flex-nowrap items-start">
+    <div className="flex w-full gap-4">
       {/* overlay to dim left side when editor slides in on mobile */}
       <div className={`overlay transition-opacity ${overlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={toggleEditor} />
 
-      <aside className={`left-panel w-80 min-w-[220px] flex-shrink-0 bg-white/60 dark:bg-gray-900/60 border rounded-lg shadow-sm flex flex-col overflow-hidden ${loading ? 'pulse-green' : ''}`}>
+      <aside className={`left-panel w-80 min-w-[220px] bg-white/60 dark:bg-gray-900/60 border rounded-lg shadow-sm flex flex-col overflow-hidden ${loading ? 'pulse-green' : ''}`}>
         <div className="chat-header px-3 py-2 bg-white/80 dark:bg-gray-900/80 border-b flex items-center justify-between gap-2">
           <div className="flex items-center gap-3">
-            <button title="New chat" onClick={startNewChat} className="btn">➕</button>
+            <button title="New chat" onClick={startNewChat} className="px-2 py-1 rounded border bg-transparent text-sm hover:bg-gray-50 dark:hover:bg-gray-800">➕</button>
             <div>
               <div className="text-sm font-semibold">Chat</div>
             </div>
@@ -449,22 +407,11 @@ export function CodeEditor(): JSX.Element {
           <div className="flex items-center gap-2">
             <div className="text-xs px-2 py-1 rounded border bg-transparent">{preferredProvider === 'puter' ? (puterSignedIn ? 'Puter' : 'Puter (signin)') : 'Pollinations'}</div>
             <select aria-label="Select model" value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className="text-xs p-1 rounded border bg-transparent">
-              {
-                // Build options from active models; if none enabled, fallback to defaults
-                (() => {
-                  const enabled = [ ...(pollinationsModels || []), ...(puterModels || []) ].filter(m => !!activeModels[m]);
-                  if (enabled.length === 0) {
-                    return [
-                      <option key="openai" value="openai">GPT-4o-mini</option>,
-                      <option key="openai-large" value="openai-large">GPT-4o</option>,
-                      <option key="qwen-coder" value="qwen-coder">Qwen 2.5 Coder</option>,
-                      <option key="llama" value="llama">Llama 3.3 70B</option>,
-                      <option key="mistral" value="mistral">Mistral</option>,
-                    ];
-                  }
-                  return enabled.map((m) => <option key={m} value={m}>{m}</option>);
-                })()
-              }
+              <option value="openai">GPT-4o-mini</option>
+              <option value="openai-large">GPT-4o</option>
+              <option value="qwen-coder">Qwen 2.5 Coder</option>
+              <option value="llama">Llama 3.3 70B</option>
+              <option value="mistral">Mistral</option>
             </select>
           </div>
         </div>
@@ -488,21 +435,22 @@ export function CodeEditor(): JSX.Element {
 
         <div className="chat-input px-4 py-3 bg-white/90 dark:bg-gray-900/90 border-t flex items-center gap-3">
           <input aria-label="Prompt" value={userInput} onChange={(e) => setUserInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') generateCode(); }} placeholder="Describe what you want (e.g. add a navbar)" className="flex-1 px-3 py-2 rounded border bg-white dark:bg-gray-800 text-sm" />
-          <button aria-label="Generate" onClick={generateCode} disabled={loading} className="btn btn-primary flex items-center gap-2">
+          <button aria-label="Generate" onClick={generateCode} disabled={loading} className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
             {loading ? <Spinner /> : <Play size={14} />}
             <span className="text-sm">Run</span>
           </button>
         </div>
       </aside>
 
-      <section className={`right-panel flex-1 min-w-0 flex flex-col bg-white/60 dark:bg-gray-900/60 border rounded-lg shadow-sm overflow-visible ${editorVisible ? '' : 'hidden'}`}>
-        <div className="toolbar px-4 py-2 flex items-center bg-white/80 dark:bg-gray-900/80 border-b relative z-10 overflow-visible">
+      <section className={`right-panel flex-1 flex flex-col bg-white/60 dark:bg-gray-900/60 border rounded-lg shadow-sm overflow-hidden ${editorVisible ? '' : 'hidden'}`}>
+        <div className="toolbar px-4 py-2 flex items-center gap-3 bg-white/80 dark:bg-gray-900/80 border-b">
           <button title="Close editor (mobile)" onClick={toggleEditor} className="close-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 hidden sm:inline-flex"><X size={16} /></button>
 
-          <div className="flex-1 flex items-center justify-center gap-3">
-            <button onClick={downloadZip} title="Download ZIP" className="btn"><Download size={16} /></button>
-            <button onClick={openInNewTab} title="Open preview in new tab" className="btn"><ExternalLink size={16} /></button>
-            <button title="Import files" onClick={() => fileInputRef.current?.click()} className="btn"><UploadIcon /></button>
+          <div className="flex items-center gap-2">
+            <button onClick={downloadZip} title="Download ZIP" className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><Download size={16} /></button>
+            <button onClick={openInNewTab} title="Open preview in new tab" className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><ExternalLink size={16} /></button>
+            {/* Theme toggle moved to Settings popup */}
+            <button title="Import files" onClick={() => fileInputRef.current?.click()} className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><UploadIcon /></button>
             <input ref={fileInputRef} type="file" multiple accept=".html,.css,.js" className="hidden" onChange={importFiles} />
           </div>
 
@@ -511,7 +459,7 @@ export function CodeEditor(): JSX.Element {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="1.2"/><rect x="7" y="16" width="10" height="4" rx="1" stroke="currentColor" strokeWidth="1.2"/></svg>
             </button>
             {deviceMenuOpen && (
-              <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border rounded shadow device-menu" style={{ top: 'calc(100% + 6px)' }}>
+              <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border rounded shadow z-40">
                 <button onClick={() => { setDeviceSizeState('full'); setDeviceMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm">Full Size</button>
                 <button onClick={() => { setDeviceSizeState('iphone'); setDeviceMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm">iPhone (320x568)</button>
                 <button onClick={() => { setDeviceSizeState('ipad'); setDeviceMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm">iPad (768x1024)</button>
@@ -529,38 +477,38 @@ export function CodeEditor(): JSX.Element {
         </div>
 
         <div className="content flex-1 p-4 overflow-auto bg-white dark:bg-gray-900">
-          <div className={`${tab === 'html' ? '' : 'hidden'} w-full rounded border bg-white dark:bg-gray-900 p-0 flex flex-col`}>
-            <div ref={(el) => { cmContainersRef.current.html = el; }} className="min-h-[120px]" id="cm-html" />
+          <div className={`${tab === 'html' ? '' : 'hidden'} w-full h-[420px] rounded border bg-white dark:bg-gray-900 p-0`}>
+            <div ref={(el) => { cmContainersRef.current.html = el; }} className="h-full" id="cm-html" />
             <div className="flex gap-2 p-2 border-t bg-gray-50 dark:bg-gray-800">
-              <button onClick={() => cmAction('undo')} className="btn">Undo</button>
-              <button onClick={() => cmAction('redo')} className="btn">Redo</button>
-              <button onClick={() => cmAction('format')} className="btn btn-primary">Format</button>
-              <button onClick={() => copyCode('html')} className="btn">Copy</button>
+              <button onClick={() => cmAction('undo')} className="px-2 py-1 rounded border text-sm">Undo</button>
+              <button onClick={() => cmAction('redo')} className="px-2 py-1 rounded border text-sm">Redo</button>
+              <button onClick={() => cmAction('format')} className="px-2 py-1 rounded border bg-blue-600 text-white text-sm">Format</button>
+              <button onClick={() => copyCode('html')} className="px-2 py-1 rounded border text-sm">Copy</button>
             </div>
           </div>
 
-          <div className={`${tab === 'css' ? '' : 'hidden'} w-full rounded border bg-white dark:bg-gray-900 p-0 flex flex-col`}>
-            <div ref={(el) => { cmContainersRef.current.css = el; }} className="min-h-[120px]" id="cm-css" />
+          <div className={`${tab === 'css' ? '' : 'hidden'} w-full h-[420px] rounded border bg-white dark:bg-gray-900 p-0`}>
+            <div ref={(el) => { cmContainersRef.current.css = el; }} className="h-full" id="cm-css" />
             <div className="flex gap-2 p-2 border-t bg-gray-50 dark:bg-gray-800">
-              <button onClick={() => cmAction('undo')} className="btn">Undo</button>
-              <button onClick={() => cmAction('redo')} className="btn">Redo</button>
-              <button onClick={() => cmAction('format')} className="btn btn-primary">Format</button>
-              <button onClick={() => copyCode('css')} className="btn">Copy</button>
+              <button onClick={() => cmAction('undo')} className="px-2 py-1 rounded border text-sm">Undo</button>
+              <button onClick={() => cmAction('redo')} className="px-2 py-1 rounded border text-sm">Redo</button>
+              <button onClick={() => cmAction('format')} className="px-2 py-1 rounded border bg-blue-600 text-white text-sm">Format</button>
+              <button onClick={() => copyCode('css')} className="px-2 py-1 rounded border text-sm">Copy</button>
             </div>
           </div>
 
-          <div className={`${tab === 'js' ? '' : 'hidden'} w-full rounded border bg-white dark:bg-gray-900 p-0 flex flex-col`}>
-            <div ref={(el) => { cmContainersRef.current.js = el; }} className="min-h-[120px]" id="cm-js" />
+          <div className={`${tab === 'js' ? '' : 'hidden'} w-full h-[420px] rounded border bg-white dark:bg-gray-900 p-0`}>
+            <div ref={(el) => { cmContainersRef.current.js = el; }} className="h-full" id="cm-js" />
             <div className="flex gap-2 p-2 border-t bg-gray-50 dark:bg-gray-800">
-              <button onClick={() => cmAction('undo')} className="btn">Undo</button>
-              <button onClick={() => cmAction('redo')} className="btn">Redo</button>
-              <button onClick={() => cmAction('format')} className="btn btn-primary">Format</button>
-              <button onClick={() => copyCode('js')} className="btn">Copy</button>
+              <button onClick={() => cmAction('undo')} className="px-2 py-1 rounded border text-sm">Undo</button>
+              <button onClick={() => cmAction('redo')} className="px-2 py-1 rounded border text-sm">Redo</button>
+              <button onClick={() => cmAction('format')} className="px-2 py-1 rounded border bg-blue-600 text-white text-sm">Format</button>
+              <button onClick={() => copyCode('js')} className="px-2 py-1 rounded border text-sm">Copy</button>
             </div>
           </div>
 
-          <div className={`${tab === 'output' ? '' : 'hidden'} w-full rounded border overflow-hidden flex-1 min-h-[200px]`}>
-            <iframe title="preview" ref={iframeRef} className="w-full h-full flex-1" sandbox="allow-scripts allow-forms allow-same-origin" />
+          <div className={`${tab === 'output' ? '' : 'hidden'} w-full h-[520px] rounded border overflow-hidden`}>
+            <iframe title="preview" ref={iframeRef} className="w-full h-full" sandbox="allow-scripts allow-forms allow-same-origin" />
           </div>
         </div>
       </section>

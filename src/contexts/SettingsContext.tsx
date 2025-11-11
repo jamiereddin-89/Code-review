@@ -128,23 +128,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
   const refreshPuterModels = useCallback(async () => {
     try {
-      // prefer using puter SDK if available
-      const sdk = (window as any).puter?.api;
-      if (sdk && typeof sdk.listModels === 'function') {
-        try {
-          const res = await sdk.listModels();
-          const list = Array.isArray(res) ? res.map((m: any) => (typeof m === 'string' ? m : m.name || m.id || JSON.stringify(m))) : [];
-          setPuterModels(list);
-          return list;
-        } catch (e) { /* fallback to fetch */ }
-      }
-
-      // fallback: try to fetch with Authorization token if present
-      const token = (window as any).puter?.auth?.getToken ? await (window as any).puter.auth.getToken() : null;
-      const headers: Record<string,string> = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const res = await fetch('https://api.puter.com/puterai/chat/models/', { headers, credentials: token ? 'include' : 'same-origin' });
+      const res = await fetch('https://api.puter.com/puterai/chat/models/');
       if (!res.ok) throw new Error('Failed to fetch puter models');
       const data = await res.json().catch(() => null);
       let list: string[] = [];
@@ -194,27 +178,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const api = window.puter?.auth;
     if (!api) return false;
     try {
-      // Trigger the sign-in flow (may open popup). After that, poll for auth state.
       await api.signIn();
-      // poll for sign-in status for up to 6 seconds
-      const start = Date.now();
-      const timeoutMs = 6000;
-      while (Date.now() - start < timeoutMs) {
-        try {
-          const signed = await api.isSignedIn();
-          if (signed) {
-            await refreshPuterAuth();
-            return true;
-          }
-        } catch (e) { /* ignore */ }
-        await new Promise((r) => setTimeout(r, 400));
-      }
-      // final attempt
       await refreshPuterAuth();
-      return Boolean(await api.isSignedIn());
+      return true;
     } catch (e) {
       console.error('Puter signIn failed', e);
-      try { await refreshPuterAuth(); } catch {};
       return false;
     }
   }, [refreshPuterAuth]);
@@ -239,24 +207,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     })();
     // Also refresh after a small delay to catch deferred script load
     const t = setTimeout(() => refreshPuterAuth(), 1500);
-
-    // If puter exposes auth events, subscribe to keep state in sync
-    const api = (window as any).puter?.auth;
-    let unsub: (() => void) | null = null;
-    try {
-      if (api && typeof api.onAuthChange === 'function') {
-        const cb = () => refreshPuterAuth();
-        api.onAuthChange(cb);
-        unsub = () => api.offAuthChange && api.offAuthChange(cb);
-      }
-    } catch (e) {
-      // ignore
-    }
-
     return () => {
       mounted = false;
       clearTimeout(t);
-      if (unsub) unsub();
     };
   }, [refreshPuterAuth]);
 
