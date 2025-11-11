@@ -175,10 +175,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setPreferredProvider,
     puterSignedIn,
     puterUser,
+    puterUsage,
     refreshPuterAuth,
+    refreshPuterUsage,
     signInPuter,
     signOutPuter,
-  }), [theme, deviceSize, preferredProvider, puterSignedIn, puterUser, refreshPuterAuth, signInPuter, signOutPuter]);
+  }), [theme, deviceSize, preferredProvider, puterSignedIn, puterUser, puterUsage, refreshPuterAuth, refreshPuterUsage, signInPuter, signOutPuter]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
