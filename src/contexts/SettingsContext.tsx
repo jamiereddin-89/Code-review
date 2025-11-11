@@ -44,6 +44,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [puterSignedIn, setPuterSignedIn] = useState(false);
   const [puterUser, setPuterUser] = useState<UserInfo | null>(null);
   const [puterUsage, setPuterUsage] = useState<PutterUsage | null>(null);
+  const [pollinationsModels, setPollinationsModels] = useState<string[]>([]);
+  const [puterModels, setPuterModels] = useState<string[]>([]);
+  const [activeModels, setActiveModels] = useState<Record<string, boolean>>(() => JSON.parse(localStorage.getItem('active.models') || '{}'));
 
   // Persist settings
   useEffect(() => localStorage.setItem(THEME_KEY, theme), [theme]);
