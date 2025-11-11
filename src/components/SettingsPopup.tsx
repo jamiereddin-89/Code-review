@@ -42,11 +42,31 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
               <div className="space-y-2">
                 <div className="text-sm">Signed in with Puter</div>
                 {puterUser && (
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                     <div>Name: {puterUser.name || '—'}</div>
                     <div>Email: {puterUser.email || '—'}</div>
                   </div>
                 )}
+
+                {/* Usage progress */}
+                {puterUsage ? (
+                  <div className="mt-3">
+                    <div className="text-xs text-gray-500 mb-1">Monthly usage</div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded h-3 overflow-hidden">
+                      <div
+                        className="h-3 bg-green-500"
+                        style={{ width: `${Math.min(100, Math.round((puterUsage.used / (puterUsage.limit || Math.max(puterUsage.used,1))) * 100))}%` }}
+                      />
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">{puterUsage.used} used{puterUsage.limit ? ` • ${puterUsage.limit} limit` : ''}</div>
+                    <div className="mt-2">
+                      <button onClick={refreshPuterUsage} className="text-xs rounded border px-2 py-1">Refresh usage</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-500 mt-2">Usage data not available</div>
+                )}
+
                 <button
                   onClick={signOutPuter}
                   className="mt-2 inline-flex items-center rounded-md border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
