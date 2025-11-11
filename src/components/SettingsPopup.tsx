@@ -121,8 +121,8 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
           <section>
             <h3 className="font-medium mb-2">AI Models</h3>
             <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span>Provider</span>
+              <div className="flex items-center gap-2">
+                <span className="mr-auto">Provider</span>
                 <select
                   value={preferredProvider}
                   onChange={(e) => setPreferredProvider(e.target.value as any)}
@@ -132,6 +132,14 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
                   <option value="puter" disabled={!puterSignedIn}>Puter {puterSignedIn ? '' : '(Sign-in required)'}</option>
                 </select>
               </div>
+
+              <div className="flex items-center gap-2">
+                <button onClick={async () => { await refreshPollinationsModels(); }} className="px-3 py-1 rounded border text-sm">Refresh Pollinations Models</button>
+                <button onClick={async () => { await refreshPuterModels(); }} className="px-3 py-1 rounded border text-sm" disabled={!puterSignedIn}>Refresh Puter Models</button>
+                {pollinationsModels.length > 0 && <button onClick={() => setShowModels('pollinations')} className="px-3 py-1 rounded border text-sm">Pollinations Models</button>}
+                {puterModels.length > 0 && <button onClick={() => setShowModels('puter')} className="px-3 py-1 rounded border text-sm">Puter Models</button>}
+              </div>
+
               <p className="text-xs text-gray-600 dark:text-gray-400">When both are available, app may fall back automatically if a provider fails.</p>
             </div>
           </section>
