@@ -453,11 +453,22 @@ export function CodeEditor(): JSX.Element {
           <div className="flex items-center gap-2">
             <div className="text-xs px-2 py-1 rounded border bg-transparent">{preferredProvider === 'puter' ? (puterSignedIn ? 'Puter' : 'Puter (signin)') : 'Pollinations'}</div>
             <select aria-label="Select model" value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className="text-xs p-1 rounded border bg-transparent">
-              <option value="openai">GPT-4o-mini</option>
-              <option value="openai-large">GPT-4o</option>
-              <option value="qwen-coder">Qwen 2.5 Coder</option>
-              <option value="llama">Llama 3.3 70B</option>
-              <option value="mistral">Mistral</option>
+              {
+                // Build options from active models; if none enabled, fallback to defaults
+                (() => {
+                  const enabled = [ ...(pollinationsModels || []), ...(puterModels || []) ].filter(m => !!activeModels[m]);
+                  if (enabled.length === 0) {
+                    return [
+                      <option key="openai" value="openai">GPT-4o-mini</option>,
+                      <option key="openai-large" value="openai-large">GPT-4o</option>,
+                      <option key="qwen-coder" value="qwen-coder">Qwen 2.5 Coder</option>,
+                      <option key="llama" value="llama">Llama 3.3 70B</option>,
+                      <option key="mistral" value="mistral">Mistral</option>,
+                    ];
+                  }
+                  return enabled.map((m) => <option key={m} value={m}>{m}</option>);
+                })()
+              }
             </select>
           </div>
         </div>
