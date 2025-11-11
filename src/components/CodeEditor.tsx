@@ -139,6 +139,13 @@ export function CodeEditor(): JSX.Element {
   function switchTab(to: 'html' | 'css' | 'js' | 'output') {
     setTab(to);
     if (to === 'output') setDeviceSizeState((s) => s);
+    // ensure editor resizes when tab switches
+    setTimeout(() => {
+      const cur = to === 'html' ? cmHtmlRef.current : to === 'css' ? cmCssRef.current : cmJsRef.current;
+      if (cur && cur.refresh && cur.getScrollInfo) {
+        try { const info = cur.getScrollInfo(); cur.setSize('100%', Math.min(900, Math.max(120, info.height + 16)) + 'px'); cur.refresh(); } catch (e) { /* ignore */ }
+      }
+    }, 60);
   }
 
   function startNewChat() {
