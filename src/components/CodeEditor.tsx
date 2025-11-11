@@ -492,7 +492,7 @@ export function CodeEditor(): JSX.Element {
 
         <div className="chat-input px-4 py-3 bg-white/90 dark:bg-gray-900/90 border-t flex items-center gap-3">
           <input aria-label="Prompt" value={userInput} onChange={(e) => setUserInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') generateCode(); }} placeholder="Describe what you want (e.g. add a navbar)" className="flex-1 px-3 py-2 rounded border bg-white dark:bg-gray-800 text-sm" />
-          <button aria-label="Generate" onClick={generateCode} disabled={loading} className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
+          <button aria-label="Generate" onClick={generateCode} disabled={loading} className="btn btn-primary flex items-center gap-2">
             {loading ? <Spinner /> : <Play size={14} />}
             <span className="text-sm">Run</span>
           </button>
