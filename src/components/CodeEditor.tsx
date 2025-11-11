@@ -471,7 +471,7 @@ export function CodeEditor(): JSX.Element {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="1.2"/><rect x="7" y="16" width="10" height="4" rx="1" stroke="currentColor" strokeWidth="1.2"/></svg>
             </button>
             {deviceMenuOpen && (
-              <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border rounded shadow z-40">
+              <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border rounded shadow device-menu" style={{ top: '100%' }}>
                 <button onClick={() => { setDeviceSizeState('full'); setDeviceMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm">Full Size</button>
                 <button onClick={() => { setDeviceSizeState('iphone'); setDeviceMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm">iPhone (320x568)</button>
                 <button onClick={() => { setDeviceSizeState('ipad'); setDeviceMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm">iPad (768x1024)</button>
