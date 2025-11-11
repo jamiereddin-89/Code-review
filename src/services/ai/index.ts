@@ -28,28 +28,57 @@ export const pollinationsProvider: AIProvider = {
       seed: Math.floor(Math.random() * 1e9),
     };
 
-    const req = fetch('https://text.pollinations.ai/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }).then(async (res) => {
-      if (!res.ok) throw new Error(`Pollinations error ${res.status}`);
-      // Read text once and attempt to parse JSON — avoids 'body stream already read' errors
-      const raw = await res.text();
-      let text: string | null = null;
-      try {
-        const parsed = JSON.parse(raw);
-        if (typeof parsed === 'string') text = parsed;
-        else if (parsed && typeof parsed === 'object' && parsed.content) text = String(parsed.content);
-      } catch (e) {
-        // not JSON, fallback to raw text
-      }
-      if (!text) text = raw;
-      if (!text) throw new Error('Empty response');
-      return { content: String(text), provider: 'pollinations' as const, model: body.model };
-    });
+    const url = 'https://text.pollinations.ai/';
+    const timeoutMs = options?.timeoutMs ?? 30000;
+    const maxAttempts = 2;
 
-    return withTimeout(req, options?.timeoutMs ?? 30000);
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const controller = new AbortController();
+      const signal = controller.signal;
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal,
+        });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error(`Pollinations error ${res.status}`);
+        const raw = await res.text();
+        let text: string | null = null;
+        try {
+          const parsed = JSON.parse(raw);
+          if (typeof parsed === 'string') text = parsed;
+          else if (parsed && typeof parsed === 'object' && parsed.content) text = String(parsed.content);
+        } catch (e) {
+          // not JSON, fallback to raw text
+        }
+        if (!text) text = raw;
+        if (!text) throw new Error('Empty response');
+        return { content: String(text), provider: 'pollinations' as const, model: body.model };
+      } catch (err: any) {
+        clearTimeout(timer);
+        // if aborted due to timeout, treat as timeout
+        if (err.name === 'AbortError' || (err.message && err.message.toLowerCase().includes('timed out'))) {
+          // retry unless last attempt
+          if (attempt < maxAttempts - 1) {
+            // exponential backoff
+            await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+            continue;
+          }
+          throw new Error('Request timed out');
+        }
+        // for other errors, retry once then bubble
+        if (attempt < maxAttempts - 1) {
+          await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    throw new Error('Pollinations failed after retries');
   },
 };
 
