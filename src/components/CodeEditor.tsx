@@ -454,7 +454,7 @@ export function CodeEditor(): JSX.Element {
         </div>
       </aside>
 
-      <section className={`right-panel flex-1 flex flex-col bg-white/60 dark:bg-gray-900/60 border rounded-lg shadow-sm overflow-hidden ${editorVisible ? '' : 'hidden'}`}>
+      <section className={`right-panel flex-1 min-w-0 flex flex-col bg-white/60 dark:bg-gray-900/60 border rounded-lg shadow-sm overflow-hidden ${editorVisible ? '' : 'hidden'}`}>
         <div className="toolbar px-4 py-2 flex items-center bg-white/80 dark:bg-gray-900/80 border-b">
           <button title="Close editor (mobile)" onClick={toggleEditor} className="close-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 hidden sm:inline-flex"><X size={16} /></button>
 
