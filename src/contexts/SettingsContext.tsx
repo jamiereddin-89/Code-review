@@ -43,6 +43,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [preferredProvider, setPreferredProvider] = useState<Provider>(() => (localStorage.getItem(PROVIDER_KEY) as Provider) || 'pollinations');
   const [puterSignedIn, setPuterSignedIn] = useState(false);
   const [puterUser, setPuterUser] = useState<UserInfo | null>(null);
+  const [puterUsage, setPuterUsage] = useState<PutterUsage | null>(null);
 
   // Persist settings
   useEffect(() => localStorage.setItem(THEME_KEY, theme), [theme]);
