@@ -104,6 +104,37 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const refreshPollinationsModels = useCallback(async () => {
+    try {
+      const res = await fetch('https://text.pollinations.ai/models');
+      if (!res.ok) throw new Error('Failed to fetch pollinations models');
+      const data = await res.json().catch(() => null);
+      // expect array of model names or objects
+      let list: string[] = [];
+      if (Array.isArray(data)) list = data.map((m: any) => (typeof m === 'string' ? m : m.name || m.id || JSON.stringify(m)));
+      setPollinationsModels(list);
+      return list;
+    } catch (e) {
+      setPollinationsModels([]);
+      return [];
+    }
+  }, []);
+
+  const refreshPuterModels = useCallback(async () => {
+    try {
+      const res = await fetch('https://api.puter.com/puterai/chat/models/');
+      if (!res.ok) throw new Error('Failed to fetch puter models');
+      const data = await res.json().catch(() => null);
+      let list: string[] = [];
+      if (Array.isArray(data)) list = data.map((m: any) => (typeof m === 'string' ? m : m.name || m.id || JSON.stringify(m)));
+      setPuterModels(list);
+      return list;
+    } catch (e) {
+      setPuterModels([]);
+      return [];
+    }
+  }, []);
+
   const refreshPuterAuth = useCallback(async () => {
     try {
       const api = window.puter?.auth;
