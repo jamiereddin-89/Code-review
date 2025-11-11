@@ -53,6 +53,13 @@
   border-radius: 6px;
 }
 
+/* Settings grid: on narrow screens, reset z-index to avoid overlay conflicts */
+@media (max-width: 991px) {
+  .settings-grid {
+    z-index: auto !important;
+  }
+}
+
 /* Webkit */
 .CodeMirror-scroll::-webkit-scrollbar, .content::-webkit-scrollbar, .chat::-webkit-scrollbar, textarea::-webkit-scrollbar, iframe::-webkit-scrollbar {
   width: 6px;
