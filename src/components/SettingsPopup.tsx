@@ -25,7 +25,7 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-60">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       <div className="absolute inset-x-4 top-10 mx-auto max-w-2xl rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-xl border border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
