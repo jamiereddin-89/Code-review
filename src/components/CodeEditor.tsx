@@ -299,9 +299,18 @@ export function CodeEditor(): JSX.Element {
       const approxLineHeight = 20;
       function setAutoHeight(cmInstance: any) {
         try {
-          const lines = Math.max(1, cmInstance.lineCount());
-          const height = Math.min(800, Math.max(120, lines * approxLineHeight + 20));
+          // prefer measuring content height directly when available
+          const info = cmInstance.getScrollInfo ? cmInstance.getScrollInfo() : null;
+          let height = 0;
+          if (info && typeof info.height === 'number') {
+            height = Math.min(900, Math.max(120, info.height + 16));
+          } else {
+            const lines = Math.max(1, cmInstance.lineCount());
+            height = Math.min(900, Math.max(120, lines * approxLineHeight + 20));
+          }
           cmInstance.setSize('100%', height + 'px');
+          // ensure layout refresh
+          if (cmInstance.refresh) cmInstance.refresh();
         } catch (e) { /* ignore */ }
       }
 
