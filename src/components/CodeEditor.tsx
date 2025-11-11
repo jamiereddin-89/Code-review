@@ -296,6 +296,15 @@ export function CodeEditor(): JSX.Element {
       const CM = (window as any).CodeMirror;
       if (!CM) return false;
       // HTML editor
+      const approxLineHeight = 20;
+      function setAutoHeight(cmInstance: any) {
+        try {
+          const lines = Math.max(1, cmInstance.lineCount());
+          const height = Math.min(800, Math.max(120, lines * approxLineHeight + 20));
+          cmInstance.setSize('100%', height + 'px');
+        } catch (e) { /* ignore */ }
+      }
+
       if (!cmHtmlRef.current && cmContainersRef.current.html) {
         cmHtmlRef.current = CM(cmContainersRef.current.html, {
           value: html,
@@ -304,7 +313,8 @@ export function CodeEditor(): JSX.Element {
           autoCloseBrackets: true,
           tabSize: 2,
         });
-        cmHtmlRef.current.on('change', (cm: any) => setHtml(cm.getValue()));
+        cmHtmlRef.current.on('change', (cm: any) => { setHtml(cm.getValue()); setAutoHeight(cm); });
+        setAutoHeight(cmHtmlRef.current);
       }
       // CSS editor
       if (!cmCssRef.current && cmContainersRef.current.css) {
@@ -315,7 +325,8 @@ export function CodeEditor(): JSX.Element {
           autoCloseBrackets: true,
           tabSize: 2,
         });
-        cmCssRef.current.on('change', (cm: any) => setCss(cm.getValue()));
+        cmCssRef.current.on('change', (cm: any) => { setCss(cm.getValue()); setAutoHeight(cm); });
+        setAutoHeight(cmCssRef.current);
       }
       // JS editor
       if (!cmJsRef.current && cmContainersRef.current.js) {
@@ -326,7 +337,8 @@ export function CodeEditor(): JSX.Element {
           autoCloseBrackets: true,
           tabSize: 2,
         });
-        cmJsRef.current.on('change', (cm: any) => setJs(cm.getValue()));
+        cmJsRef.current.on('change', (cm: any) => { setJs(cm.getValue()); setAutoHeight(cm); });
+        setAutoHeight(cmJsRef.current);
       }
       return true;
     }
