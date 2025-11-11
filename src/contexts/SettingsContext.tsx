@@ -10,6 +10,11 @@ export interface UserInfo {
   name?: string;
 }
 
+interface PutterUsage {
+  used: number;
+  limit: number | null; // null if unknown
+}
+
 interface SettingsState {
   theme: Theme;
   setTheme: (t: Theme) => void;
@@ -19,8 +24,10 @@ interface SettingsState {
   setPreferredProvider: (p: Provider) => void;
   puterSignedIn: boolean;
   puterUser: UserInfo | null;
+  puterUsage: PutterUsage | null;
   refreshPuterAuth: () => Promise<void>;
-  signInPuter: () => Promise<void>;
+  refreshPuterUsage: () => Promise<void>;
+  signInPuter: () => Promise<boolean>;
   signOutPuter: () => Promise<void>;
 }
 
