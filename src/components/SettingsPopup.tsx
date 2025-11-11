@@ -39,15 +39,15 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
       <div className="fixed inset-0 bg-black/40" onClick={onClose} />
 
       <div className="fixed inset-0 flex items-start justify-center pt-20 px-4">
-        <div className="max-w-2xl w-full rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-xl border border-gray-200 dark:border-gray-800 settings-modal z-[2000001]">
+        <div className="max-w-2xl w-full panel settings-modal z-[2000001]">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
             <h2 className="text-base font-semibold">Settings</h2>
-            <button aria-label="Close" onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 settings-close-btn">
+            <button aria-label="Close" onClick={onClose} className="btn settings-close-btn">
               <X className="h-5 w-5" />
             </button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 p-4 settings-grid max-h-[70vh] overflow-auto">
+          <div className="grid md:grid-cols-2 gap-6 p-4 settings-grid modal-inner">
             <section>
               <h3 className="font-medium mb-2">Account</h3>
               {puterSignedIn ? (
