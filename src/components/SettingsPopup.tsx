@@ -59,7 +59,7 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
                   onClick={signInPuter}
                   className="inline-flex items-center rounded-md border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  Sign In with Puter
+                  Sign In Puter
                 </button>
               </div>
             )}
