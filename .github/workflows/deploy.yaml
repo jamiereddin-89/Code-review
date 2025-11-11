@@ -39,7 +39,7 @@ jobs:
     name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/vibe-forge' && github.event_name == 'push'
 
     permissions:
       id-token: write
@@ -56,4 +56,5 @@ jobs:
           path: ./dist
 
       - uses: actions/deploy-pages@v4
+
 
