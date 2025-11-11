@@ -34,8 +34,17 @@ export const pollinationsProvider: AIProvider = {
       body: JSON.stringify(body),
     }).then(async (res) => {
       if (!res.ok) throw new Error(`Pollinations error ${res.status}`);
-      const data = await res.json().catch(() => null);
-      const text = typeof data === 'string' ? data : data?.content ?? await res.text();
+      // Read text once and attempt to parse JSON — avoids 'body stream already read' errors
+      const raw = await res.text();
+      let text: string | null = null;
+      try {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed === 'string') text = parsed;
+        else if (parsed && typeof parsed === 'object' && parsed.content) text = String(parsed.content);
+      } catch (e) {
+        // not JSON, fallback to raw text
+      }
+      if (!text) text = raw;
       if (!text) throw new Error('Empty response');
       return { content: String(text), provider: 'pollinations' as const, model: body.model };
     });
