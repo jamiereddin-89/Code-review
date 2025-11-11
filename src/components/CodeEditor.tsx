@@ -455,13 +455,12 @@ export function CodeEditor(): JSX.Element {
       </aside>
 
       <section className={`right-panel flex-1 flex flex-col bg-white/60 dark:bg-gray-900/60 border rounded-lg shadow-sm overflow-hidden ${editorVisible ? '' : 'hidden'}`}>
-        <div className="toolbar px-4 py-2 flex items-center gap-3 bg-white/80 dark:bg-gray-900/80 border-b">
+        <div className="toolbar px-4 py-2 flex items-center bg-white/80 dark:bg-gray-900/80 border-b">
           <button title="Close editor (mobile)" onClick={toggleEditor} className="close-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 hidden sm:inline-flex"><X size={16} /></button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex-1 flex items-center justify-center gap-3">
             <button onClick={downloadZip} title="Download ZIP" className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><Download size={16} /></button>
             <button onClick={openInNewTab} title="Open preview in new tab" className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><ExternalLink size={16} /></button>
-            {/* Theme toggle moved to Settings popup */}
             <button title="Import files" onClick={() => fileInputRef.current?.click()} className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><UploadIcon /></button>
             <input ref={fileInputRef} type="file" multiple accept=".html,.css,.js" className="hidden" onChange={importFiles} />
           </div>
