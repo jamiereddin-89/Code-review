@@ -29,7 +29,11 @@
 .right-panel, .left-panel, .overlay, .content, iframe {
   z-index: 0 !important;
   position: relative;
+  align-self: stretch;
 }
+
+/* Stretch panels to same height within parent flex container */
+.left-panel, .right-panel { height: auto; }
 
 /* Device menu higher than editor but below settings modal */
 .device-menu {
@@ -46,6 +50,9 @@
   justify-content: center;
 }
 
+/* Make toolbar icons center and wrap gracefully */
+.toolbar .flex-1 { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
 /* X close button border */
 .settings-close-btn {
   border: 1px solid rgba(148,163,184,0.18);
@@ -59,6 +66,10 @@
     z-index: auto !important;
   }
 }
+
+/* Ensure settings modal always on top */
+.settings-modal { z-index: 2000000 !important; position: relative; }
+.model-modal { z-index: 1999999 !important; }
 
 /* Webkit */
 .CodeMirror-scroll::-webkit-scrollbar, .content::-webkit-scrollbar, .chat::-webkit-scrollbar, textarea::-webkit-scrollbar, iframe::-webkit-scrollbar {
