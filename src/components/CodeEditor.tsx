@@ -504,7 +504,7 @@ export function CodeEditor(): JSX.Element {
           <button title="Close editor (mobile)" onClick={toggleEditor} className="close-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 hidden sm:inline-flex"><X size={16} /></button>
 
           <div className="flex-1 flex items-center justify-center gap-3">
-            <button onClick={downloadZip} title="Download ZIP" className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><Download size={16} /></button>
+            <button onClick={downloadZip} title="Download ZIP" className="btn"><Download size={16} /></button>
             <button onClick={openInNewTab} title="Open preview in new tab" className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><ExternalLink size={16} /></button>
             <button title="Import files" onClick={() => fileInputRef.current?.click()} className="p-2 rounded border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"><UploadIcon /></button>
             <input ref={fileInputRef} type="file" multiple accept=".html,.css,.js" className="hidden" onChange={importFiles} />
