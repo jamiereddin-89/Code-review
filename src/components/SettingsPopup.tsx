@@ -171,6 +171,20 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
               <h3 className="text-base font-semibold">{showModels === 'pollinations' ? 'Pollinations Models' : 'Puter Models'}</h3>
               <div className="flex items-center gap-2">
                 <input value={modelSearch} onChange={(e) => setModelSearch(e.target.value)} placeholder="Search models" className="px-2 py-1 rounded border text-sm" />
+                <button onClick={() => {
+                  const list = (showModels === 'pollinations' ? pollinationsModels : puterModels).filter(m => m.toLowerCase().includes(modelSearch.toLowerCase()));
+                  const next = { ...activeModels };
+                  list.forEach((m) => { next[m] = true; });
+                  setActiveModels(next);
+                  localStorage.setItem('active.models', JSON.stringify(next));
+                }} className="px-2 py-1 rounded border text-sm">Select All</button>
+                <button onClick={() => {
+                  const list = (showModels === 'pollinations' ? pollinationsModels : puterModels).filter(m => m.toLowerCase().includes(modelSearch.toLowerCase()));
+                  const next = { ...activeModels };
+                  list.forEach((m) => { next[m] = false; });
+                  setActiveModels(next);
+                  localStorage.setItem('active.models', JSON.stringify(next));
+                }} className="px-2 py-1 rounded border text-sm">Deselect All</button>
                 <button onClick={() => setShowModels(null)} className="px-2 py-1 rounded border">Close</button>
               </div>
             </div>
