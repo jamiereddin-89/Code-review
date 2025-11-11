@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Chat generating pulse */
+@keyframes pulse-green {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.0); }
+  50% { box-shadow: 0 0 12px 4px rgba(16, 185, 129, 0.18); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.0); }
+}
+
+.pulse-green {
+  animation: pulse-green 1.6s infinite ease-in-out;
+  border-color: rgba(16,185,129,0.8) !important;
+}
