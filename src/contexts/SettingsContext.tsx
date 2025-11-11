@@ -178,11 +178,27 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const api = window.puter?.auth;
     if (!api) return false;
     try {
+      // Trigger the sign-in flow (may open popup). After that, poll for auth state.
       await api.signIn();
+      // poll for sign-in status for up to 6 seconds
+      const start = Date.now();
+      const timeoutMs = 6000;
+      while (Date.now() - start < timeoutMs) {
+        try {
+          const signed = await api.isSignedIn();
+          if (signed) {
+            await refreshPuterAuth();
+            return true;
+          }
+        } catch (e) { /* ignore */ }
+        await new Promise((r) => setTimeout(r, 400));
+      }
+      // final attempt
       await refreshPuterAuth();
-      return true;
+      return Boolean(await api.isSignedIn());
     } catch (e) {
       console.error('Puter signIn failed', e);
+      try { await refreshPuterAuth(); } catch {};
       return false;
     }
   }, [refreshPuterAuth]);
