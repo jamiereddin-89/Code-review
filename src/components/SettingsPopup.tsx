@@ -12,6 +12,8 @@ export function SettingsPopup({ onClose }: { onClose: () => void }) {
     setPreferredProvider,
     puterSignedIn,
     puterUser,
+    puterUsage,
+    refreshPuterUsage,
     signInPuter,
     signOutPuter,
   } = useSettings();
