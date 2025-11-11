@@ -221,7 +221,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     refreshPuterUsage,
     signInPuter,
     signOutPuter,
-  }), [theme, deviceSize, preferredProvider, puterSignedIn, puterUser, puterUsage, refreshPuterAuth, refreshPuterUsage, signInPuter, signOutPuter]);
+    pollinationsModels,
+    puterModels,
+    refreshPollinationsModels,
+    refreshPuterModels,
+    activeModels,
+    setActiveModels,
+  }), [theme, deviceSize, preferredProvider, puterSignedIn, puterUser, puterUsage, refreshPuterAuth, refreshPuterUsage, signInPuter, signOutPuter, pollinationsModels, puterModels, refreshPollinationsModels, refreshPuterModels, activeModels]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
